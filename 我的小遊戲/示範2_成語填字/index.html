@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>成語填字拖曳遊戲</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f4e6bd;
+      --paper-2: #ead59e;
+      --ink: #27180f;
+      --muted: #7a5d38;
+      --red: #b3261e;
+      --red-2: #d84632;
+      --green: #2f8b57;
+      --wood: #f1d28f;
+      --wood-edge: #b47b34;
+      --line: rgba(105, 62, 25, 0.22);
+      --shadow: 0 22px 60px rgba(75, 45, 18, 0.22);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(179, 38, 30, 0.13), transparent 28rem),
+        radial-gradient(circle at 88% 6%, rgba(138, 86, 34, 0.13), transparent 30rem),
+        repeating-linear-gradient(0deg, rgba(115, 72, 31, 0.035) 0 1px, transparent 1px 5px),
+        linear-gradient(135deg, #fbf0ce, var(--paper));
+      font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.28;
+      background-image:
+        radial-gradient(rgba(119, 80, 38, 0.22) 0.7px, transparent 0.7px),
+        linear-gradient(90deg, rgba(179, 38, 30, 0.05), transparent 38%, rgba(179, 38, 30, 0.04));
+      background-size: 14px 14px, 100% 100%;
+    }
+
+    .wrap {
+      position: relative;
+      width: min(980px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0;
+    }
+
+    .game-card {
+      padding: clamp(18px, 4vw, 32px);
+      border: 1px solid rgba(105, 62, 25, 0.26);
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, rgba(179, 38, 30, 0.08), transparent 5%, transparent 95%, rgba(179, 38, 30, 0.08)),
+        rgba(255, 248, 224, 0.82);
+      box-shadow: var(--shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.48);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 18px;
+      border-bottom: 2px solid rgba(179, 38, 30, 0.32);
+      padding-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--red);
+      font-size: clamp(2rem, 6vw, 4rem);
+      line-height: 1.04;
+      letter-spacing: 0;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    .intro {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .meter {
+      min-width: 160px;
+      padding: 10px 14px;
+      border: 1px solid rgba(179, 38, 30, 0.36);
+      border-radius: 8px;
+      background: rgba(255, 250, 232, 0.8);
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .meter span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .meter strong {
+      color: var(--red);
+      font-size: 1.8rem;
+      line-height: 1.1;
+    }
+
+    .idiom-stage {
+      display: grid;
+      place-items: center;
+      min-height: 176px;
+      margin: 18px 0;
+      border: 1px solid rgba(105, 62, 25, 0.26);
+      border-radius: 8px;
+      background:
+        linear-gradient(rgba(179, 38, 30, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(179, 38, 30, 0.07) 1px, transparent 1px),
+        rgba(255, 249, 226, 0.72);
+      background-size: 34px 34px;
+    }
+
+    .idiom {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: clamp(8px, 2.5vw, 16px);
+      padding: 18px;
+      font-size: clamp(2.2rem, 8vw, 4.8rem);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .char {
+      width: clamp(58px, 13vw, 92px);
+      height: clamp(58px, 13vw, 92px);
+      display: grid;
+      place-items: center;
+    }
+
+    .slot {
+      position: relative;
+      border: 3px solid var(--red);
+      color: rgba(179, 38, 30, 0.38);
+      background:
+        linear-gradient(45deg, transparent calc(50% - 1px), rgba(179, 38, 30, 0.26) calc(50% - 1px), rgba(179, 38, 30, 0.26) calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(-45deg, transparent calc(50% - 1px), rgba(179, 38, 30, 0.26) calc(50% - 1px), rgba(179, 38, 30, 0.26) calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(rgba(179, 38, 30, 0.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(179, 38, 30, 0.18) 1px, transparent 1px),
+        rgba(255, 245, 213, 0.92);
+      background-size: 100% 100%, 100% 100%, 50% 50%, 50% 50%;
+    }
+
+    .slot.drag-over {
+      box-shadow: 0 0 0 5px rgba(179, 38, 30, 0.12), inset 0 0 18px rgba(179, 38, 30, 0.16);
+    }
+
+    .slot.correct {
+      color: var(--red);
+      text-shadow: 0 2px 0 rgba(255, 255, 255, 0.46);
+    }
+
+    .slot.wrong-flash {
+      animation: wrongGlow 0.2s ease;
+    }
+
+    .feedback {
+      min-height: 88px;
+      margin: 0 0 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: rgba(255, 250, 232, 0.72);
+      font-weight: 700;
+    }
+
+    .feedback.correct {
+      color: #24643d;
+      border-color: rgba(47, 139, 87, 0.42);
+      background: rgba(225, 247, 232, 0.74);
+    }
+
+    .feedback strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--green);
+      font-size: 1.25rem;
+    }
+
+    .tiles-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .tile-bank {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      min-height: 178px;
+      padding: 14px;
+      border: 1px solid rgba(105, 62, 25, 0.24);
+      border-radius: 8px;
+      background: rgba(118, 73, 31, 0.1);
+      touch-action: none;
+    }
+
+    .tile {
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--wood-edge);
+      border-radius: 8px;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(121, 70, 24, 0.06), transparent 30%, rgba(121, 70, 24, 0.07)),
+        linear-gradient(180deg, #ffe8ac, var(--wood));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 5px 0 rgba(153, 98, 38, 0.28);
+      font-size: 1.7rem;
+      font-weight: 900;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      transition: transform 0.16s ease, opacity 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .tile:hover {
+      transform: translateY(-2px);
+    }
+
+    .tile.dragging {
+      position: fixed;
+      z-index: 10;
+      pointer-events: none;
+      width: 58px;
+      opacity: 0.95;
+      transform: translate(-50%, -50%) scale(1.08);
+      box-shadow: 0 18px 28px rgba(75, 45, 18, 0.28);
+      cursor: grabbing;
+    }
+
+    .tile.used {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .tile.snap-back {
+      animation: snapBack 0.22s ease;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    .action-btn {
+      min-height: 46px;
+      padding: 10px 22px;
+      border: 0;
+      border-radius: 8px;
+      color: #fff8e8;
+      background: linear-gradient(180deg, #cf3b2c, #941f19);
+      box-shadow: 0 8px 18px rgba(179, 38, 30, 0.24);
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .action-btn[hidden] { display: none; }
+
+    .finish {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 24px;
+      background: rgba(64, 36, 16, 0.42);
+      z-index: 20;
+    }
+
+    .finish.show {
+      display: grid;
+    }
+
+    .finish-box {
+      width: min(460px, 100%);
+      padding: 28px;
+      border: 3px double var(--red);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fff4d6, #efd49b);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .finish-box h2 {
+      margin: 0 0 10px;
+      color: var(--red);
+      font-size: 2.3rem;
+    }
+
+    .finish-box p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    @keyframes wrongGlow {
+      0%, 100% { box-shadow: none; }
+      50% { box-shadow: 0 0 0 6px rgba(211, 33, 24, 0.22), inset 0 0 24px rgba(211, 33, 24, 0.32); }
+    }
+
+    @keyframes snapBack {
+      0% { transform: scale(0.96); filter: drop-shadow(0 0 10px rgba(211, 33, 24, 0.38)); }
+      100% { transform: scale(1); filter: none; }
+    }
+
+    @media (max-width: 720px) {
+      .wrap { width: min(100% - 20px, 560px); padding: 16px 0; }
+      header { display: block; }
+      .meter { margin-top: 14px; text-align: left; }
+      .tile-bank {
+        display: flex;
+        overflow-x: auto;
+        min-height: 86px;
+        overscroll-behavior-x: contain;
+      }
+      .tile {
+        flex: 0 0 58px;
+      }
+    }
+
+    .map-link {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 10;
+      padding: 9px 12px;
+      border: 1px solid rgba(179, 38, 30, 0.36);
+      border-radius: 8px;
+      color: var(--red);
+      background: rgba(255, 248, 224, 0.94);
+      box-shadow: 0 10px 24px rgba(75, 45, 18, 0.18);
+      font-weight: 900;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <a class="map-link" href="../大冒險地圖/index.html">← 回到大地圖</a>
+  <div class="wrap">
+    <main class="game-card">
+      <header>
+        <div>
+          <h1>成語填字</h1>
+          <p class="intro">拖曳字卡到紅色米字格，補完成語。</p>
+        </div>
+        <div class="meter" aria-label="目前題數">
+          <span>目前題數</span>
+          <strong><span id="currentNo">1</span>/5</strong>
+        </div>
+      </header>
+
+      <section class="idiom-stage" aria-label="成語填空區">
+        <div id="idiom" class="idiom"></div>
+      </section>
+
+      <section id="feedback" class="feedback">請把正確的字拖到空格中。</section>
+
+      <div class="tiles-title">
+        <span>字卡</span>
+        <span>2 個正解 + 13 個干擾字</span>
+      </div>
+      <section id="tileBank" class="tile-bank" aria-label="字卡區"></section>
+
+      <div class="actions">
+        <button id="nextBtn" class="action-btn" type="button" hidden>下一題</button>
+      </div>
+    </main>
+  </div>
+
+  <section id="finish" class="finish" role="dialog" aria-modal="true" aria-labelledby="finishTitle">
+    <div class="finish-box">
+      <h2 id="finishTitle">挑戰完成</h2>
+      <p id="finishText">你完成了 5 題。</p>
+      <button id="restartBtn" class="action-btn" type="button">重新挑戰</button>
+    </div>
+  </section>
+
+  <script>
+    const QUESTIONS = [
+      { 成語: "一鳴驚人", 缺字: [1, 2], 答案: ["鳴", "驚"], 意思: "比喻平時默默無聞，突然有驚人表現。" },
+      { 成語: "風花雪月", 缺字: [1, 3], 答案: ["花", "月"], 意思: "原指四時景色，後比喻浮華空洞的詩文。" },
+      { 成語: "三番五次", 缺字: [1, 3], 答案: ["番", "次"], 意思: "形容次數很多。" },
+      { 成語: "一字千金", 缺字: [1, 3], 答案: ["字", "金"], 意思: "形容文字價值極高。" },
+      { 成語: "畫龍點睛", 缺字: [1, 3], 答案: ["龍", "睛"], 意思: "比喻在關鍵處點明要旨。" },
+      { 成語: "亡羊補牢", 缺字: [1, 3], 答案: ["羊", "牢"], 意思: "比喻出了問題後設法補救，還不算太晚。" },
+      { 成語: "守株待兔", 缺字: [1, 3], 答案: ["株", "兔"], 意思: "比喻拘泥舊法，不知變通，或妄想不勞而獲。" },
+      { 成語: "刻舟求劍", 缺字: [1, 3], 答案: ["舟", "劍"], 意思: "比喻不懂事物已變，仍用老方法處理問題。" },
+      { 成語: "杯弓蛇影", 缺字: [1, 3], 答案: ["弓", "影"], 意思: "比喻疑神疑鬼，自相驚擾。" },
+      { 成語: "濫竽充數", 缺字: [1, 3], 答案: ["竽", "數"], 意思: "比喻沒有真才實學的人混在行家中充數。" },
+      { 成語: "愚公移山", 缺字: [1, 3], 答案: ["公", "山"], 意思: "比喻做事有毅力，不怕困難。" },
+      { 成語: "塞翁失馬", 缺字: [1, 3], 答案: ["翁", "馬"], 意思: "比喻禍福相倚，壞事也可能變成好事。" }
+    ];
+
+    const DISTRACTORS = "天地日月山水風雨雲雷花草鳥魚龍虎馬牛羊犬金木火土仁義禮智信春夏秋冬東西南北忠孝勇謙學思行知";
+    const ROUND_COUNT = 5;
+
+    const idiomEl = document.querySelector("#idiom");
+    const tileBank = document.querySelector("#tileBank");
+    const feedback = document.querySelector("#feedback");
+    const currentNo = document.querySelector("#currentNo");
+    const nextBtn = document.querySelector("#nextBtn");
+    const finish = document.querySelector("#finish");
+    const finishText = document.querySelector("#finishText");
+    const restartBtn = document.querySelector("#restartBtn");
+
+    let roundQuestions = [];
+    let questionIndex = 0;
+    let filledCount = 0;
+    let correctTotal = 0;
+    let activeDrag = null;
+    let audioContext = null;
+
+    function shuffle(items) {
+      return [...items].sort(() => Math.random() - 0.5);
+    }
+
+    function startGame() {
+      roundQuestions = shuffle(QUESTIONS).slice(0, ROUND_COUNT);
+      questionIndex = 0;
+      correctTotal = 0;
+      finish.classList.remove("show");
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const question = roundQuestions[questionIndex];
+      filledCount = 0;
+      currentNo.textContent = questionIndex + 1;
+      feedback.className = "feedback";
+      feedback.textContent = "請把正確的字拖到空格中。";
+      nextBtn.hidden = true;
+      idiomEl.innerHTML = "";
+      tileBank.innerHTML = "";
+
+      [...question.成語].forEach((char, index) => {
+        const answerOrder = question.缺字.indexOf(index);
+        const box = document.createElement("div");
+        box.className = "char";
+
+        if (answerOrder >= 0) {
+          box.classList.add("slot");
+          box.textContent = "□";
+          box.dataset.answer = question.答案[answerOrder];
+          box.dataset.filled = "false";
+        } else {
+          box.textContent = char;
+        }
+
+        idiomEl.appendChild(box);
+      });
+
+      buildTiles(question);
+    }
+
+    function buildTiles(question) {
+      const used = new Set(question.答案);
+      const distractors = [];
+
+      for (const char of shuffle([...DISTRACTORS])) {
+        if (!used.has(char) && !distractors.includes(char)) {
+          distractors.push(char);
+        }
+        if (distractors.length === 13) break;
+      }
+
+      shuffle([...question.答案, ...distractors]).forEach((char, index) => {
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "tile";
+        tile.textContent = char;
+        tile.dataset.char = char;
+        tile.dataset.tileId = `t${questionIndex}-${index}`;
+        tile.addEventListener("pointerdown", startDrag);
+        tileBank.appendChild(tile);
+      });
+    }
+
+    function startDrag(event) {
+      const tile = event.currentTarget;
+      if (tile.classList.contains("used")) return;
+
+      event.preventDefault();
+      tile.setPointerCapture(event.pointerId);
+      playSound("pickup");
+
+      const rect = tile.getBoundingClientRect();
+      activeDrag = {
+        tile,
+        pointerId: event.pointerId,
+        homeParent: tile.parentElement,
+        homeNext: tile.nextSibling,
+        width: rect.width,
+        height: rect.height
+      };
+
+      tile.style.left = `${event.clientX}px`;
+      tile.style.top = `${event.clientY}px`;
+      tile.classList.add("dragging");
+
+      window.addEventListener("pointermove", moveDrag);
+      window.addEventListener("pointerup", endDrag);
+      window.addEventListener("pointercancel", cancelDrag);
+    }
+
+    function moveDrag(event) {
+      if (!activeDrag || event.pointerId !== activeDrag.pointerId) return;
+      activeDrag.tile.style.left = `${event.clientX}px`;
+      activeDrag.tile.style.top = `${event.clientY}px`;
+      markHoverSlot(event.clientX, event.clientY);
+    }
+
+    function endDrag(event) {
+      if (!activeDrag || event.pointerId !== activeDrag.pointerId) return;
+      const slot = getSlotAt(event.clientX, event.clientY);
+      const tile = activeDrag.tile;
+      clearHoverSlots();
+
+      if (slot && slot.dataset.filled === "false" && slot.dataset.answer === tile.dataset.char) {
+        acceptTile(tile, slot);
+      } else {
+        rejectTile(tile, slot);
+      }
+
+      cleanupDrag();
+    }
+
+    function cancelDrag(event) {
+      if (!activeDrag || event.pointerId !== activeDrag.pointerId) return;
+      rejectTile(activeDrag.tile, null);
+      cleanupDrag();
+    }
+
+    function cleanupDrag() {
+      if (!activeDrag) return;
+      activeDrag.tile.classList.remove("dragging");
+      activeDrag.tile.style.left = "";
+      activeDrag.tile.style.top = "";
+      window.removeEventListener("pointermove", moveDrag);
+      window.removeEventListener("pointerup", endDrag);
+      window.removeEventListener("pointercancel", cancelDrag);
+      activeDrag = null;
+    }
+
+    function getSlotAt(x, y) {
+      const element = document.elementFromPoint(x, y);
+      return element ? element.closest(".slot") : null;
+    }
+
+    function markHoverSlot(x, y) {
+      clearHoverSlots();
+      const slot = getSlotAt(x, y);
+      if (slot && slot.dataset.filled === "false") {
+        slot.classList.add("drag-over");
+      }
+    }
+
+    function clearHoverSlots() {
+      document.querySelectorAll(".slot.drag-over").forEach(slot => slot.classList.remove("drag-over"));
+    }
+
+    function acceptTile(tile, slot) {
+      slot.textContent = tile.dataset.char;
+      slot.dataset.filled = "true";
+      slot.classList.add("correct");
+      tile.classList.add("used");
+      filledCount += 1;
+      playSound("correct");
+
+      if (filledCount === 2) {
+        correctTotal += 1;
+        showAnswer();
+      }
+    }
+
+    function rejectTile(tile, slot) {
+      playSound("wrong");
+      tile.classList.remove("snap-back");
+      void tile.offsetWidth;
+      tile.classList.add("snap-back");
+
+      if (slot) {
+        slot.classList.remove("wrong-flash");
+        void slot.offsetWidth;
+        slot.classList.add("wrong-flash");
+      }
+
+      window.setTimeout(() => tile.classList.remove("snap-back"), 240);
+    }
+
+    function showAnswer() {
+      const question = roundQuestions[questionIndex];
+      feedback.className = "feedback correct";
+      feedback.innerHTML = `<strong>✓ 答對！</strong>${question.成語}：${question.意思}`;
+      nextBtn.textContent = questionIndex === ROUND_COUNT - 1 ? "查看成績" : "下一題";
+      nextBtn.hidden = false;
+    }
+
+    function nextQuestion() {
+      if (questionIndex === ROUND_COUNT - 1) {
+        localStorage.setItem("cert_idiom", "1");
+        finishText.textContent = `總成績：${correctTotal}/${ROUND_COUNT} 題完成。`;
+        finish.classList.add("show");
+        return;
+      }
+
+      questionIndex += 1;
+      renderQuestion();
+    }
+
+    function getAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioContext;
+    }
+
+    function tone(frequency, startOffset, duration, type, gainValue) {
+      const ctx = getAudioContext();
+      const start = ctx.currentTime + startOffset;
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(gainValue, start + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      oscillator.connect(gain).connect(ctx.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.02);
+    }
+
+    function playSound(kind) {
+      if (kind === "pickup") {
+        tone(220, 0, 0.05, "triangle", 0.04);
+      }
+      if (kind === "correct") {
+        tone(740, 0, 0.09, "sine", 0.08);
+        tone(1046, 0.07, 0.12, "sine", 0.07);
+      }
+      if (kind === "wrong") {
+        tone(150, 0, 0.09, "sawtooth", 0.055);
+        tone(110, 0.06, 0.09, "sawtooth", 0.04);
+      }
+    }
+
+    nextBtn.addEventListener("click", nextQuestion);
+    restartBtn.addEventListener("click", startGame);
+    startGame();
+  </script>
+</body>
+</html>
