@@ -109,8 +109,8 @@
 
     .map-shell {
       position: relative;
-      width: min(100%, calc((100vh - 112px) * 1.7779), 1672px);
-      aspect-ratio: 1672 / 941;
+      width: min(100%, calc((100vh - 112px) * 1.7773), 1365px);
+      aspect-ratio: 1365 / 768;
       border: 1px solid rgba(242, 193, 78, 0.28);
       border-radius: 8px;
       box-shadow: var(--shadow);
@@ -321,6 +321,107 @@
       font-weight: 900;
     }
 
+    .ending {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      color: var(--text);
+      background: #030406;
+      cursor: pointer;
+    }
+
+    .ending.show {
+      display: block;
+    }
+
+    .ending.fade {
+      animation: endingFade 0.36s ease;
+    }
+
+    .ending img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .ending::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.18) 48%, rgba(0, 0, 0, 0.64)),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.78));
+      pointer-events: none;
+    }
+
+    .ending-text {
+      position: absolute;
+      z-index: 2;
+      left: clamp(18px, 6vw, 78px);
+      right: clamp(18px, 6vw, 78px);
+      bottom: clamp(42px, 9vh, 90px);
+      max-width: 820px;
+    }
+
+    .ending-kicker {
+      margin: 0 0 8px;
+      color: var(--gold);
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-shadow: 0 0 16px rgba(242, 193, 78, 0.52);
+    }
+
+    .ending-title {
+      margin: 0 0 12px;
+      color: #ffe39a;
+      font-size: clamp(2.1rem, 7vw, 5rem);
+      line-height: 1;
+      letter-spacing: 0;
+      text-shadow: 0 0 28px rgba(242, 193, 78, 0.38), 0 4px 18px rgba(0, 0, 0, 0.82);
+    }
+
+    .ending-scene {
+      margin: 0 0 14px;
+      color: #f9e9c5;
+      font-size: clamp(1.15rem, 3vw, 1.7rem);
+      font-weight: 900;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.82);
+    }
+
+    .ending-line {
+      max-width: 760px;
+      margin: 0;
+      color: #f7ecd4;
+      font-size: clamp(1rem, 2.2vw, 1.32rem);
+      font-weight: 800;
+      line-height: 1.8;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+    }
+
+    .ending-next {
+      position: absolute;
+      z-index: 2;
+      right: clamp(18px, 4vw, 52px);
+      bottom: 18px;
+      color: rgba(255, 227, 154, 0.92);
+      font-weight: 900;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+      animation: nextPulse 1.15s ease-in-out infinite alternate;
+    }
+
+    @keyframes endingFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes nextPulse {
+      from { opacity: 0.55; transform: translateX(0); }
+      to { opacity: 1; transform: translateX(4px); }
+    }
+
     @keyframes wrongFlash {
       0%, 100% { border-color: rgba(242, 193, 78, 0.45); }
       50% { border-color: var(--red); box-shadow: 0 0 0 6px rgba(232, 74, 58, 0.22), inset 0 0 22px rgba(232, 74, 58, 0.18); }
@@ -356,10 +457,10 @@
 
   <main class="map-screen">
     <div class="map-shell" aria-label="大冒險地圖">
-      <img src="map-bg.png" alt="大冒險地圖">
-      <button class="hotspot dynasty" type="button" data-href="../示範1_朝代配對/index.html" aria-label="前往朝代配對"></button>
-      <button class="hotspot idiom" type="button" data-href="../示範2_成語填字/index.html" aria-label="前往成語填字"></button>
-      <button class="hotspot rpg" type="button" data-href="../示範3_打怪RPG/index.html" aria-label="前往打怪 RPG"></button>
+      <img src="RPGmap2.png" alt="大冒險地圖">
+      <button class="hotspot dynasty" type="button" data-href="../示範1_朝代配對/index.html" aria-label="前往瑞文戴爾"></button>
+      <button class="hotspot idiom" type="button" data-href="../示範2_成語填字/index.html" aria-label="前往魔瑞亞"></button>
+      <button class="hotspot rpg" type="button" data-href="../示範3_打怪RPG/index.html" aria-label="前往魔多"></button>
       <button id="gateHotspot" class="hotspot gate" type="button" aria-label="開啟中央大門"></button>
       <div id="stamps"></div>
     </div>
@@ -384,11 +485,22 @@
     </div>
   </section>
 
+  <section id="endingModal" class="ending" aria-label="結局過場">
+    <img id="endingImage" src="end1.png" alt="">
+    <div class="ending-text">
+      <p class="ending-kicker">灰燼後的黎明</p>
+      <h2 id="endingTitle" class="ending-title">黑門之前</h2>
+      <p id="endingScene" class="ending-scene">第一幕</p>
+      <p id="endingLine" class="ending-line"></p>
+    </div>
+    <div class="ending-next">點擊繼續</div>
+  </section>
+
   <script>
     const CERTS = [
-      { key: "cert_dynasty", type: "dynasty", short: "朝代", name: "朝代之印", icon: "🎴" },
-      { key: "cert_idiom", type: "idiom", short: "成語", name: "成語之印", icon: "📝" },
-      { key: "cert_warrior", type: "warrior", short: "勇者", name: "勇者之印", icon: "⚔️" }
+      { key: "cert_dynasty", type: "dynasty", short: "精靈", name: "精靈王的寶冠", icon: "🎴" },
+      { key: "cert_idiom", type: "idiom", short: "矮人", name: "矮人王的寶石", icon: "📝" },
+      { key: "cert_warrior", type: "warrior", short: "魔君", name: "魔君的寶戒", icon: "⚔️" }
     ];
 
     const cover = document.querySelector("#cover");
@@ -404,9 +516,42 @@
     const durationEl = document.querySelector("#duration");
     const againBtn = document.querySelector("#againBtn");
     const stamps = document.querySelector("#stamps");
+    const endingModal = document.querySelector("#endingModal");
+    const endingImage = document.querySelector("#endingImage");
+    const endingTitle = document.querySelector("#endingTitle");
+    const endingScene = document.querySelector("#endingScene");
+    const endingLine = document.querySelector("#endingLine");
+
+    const ENDING_SCENES = [
+      {
+        image: "end1.png",
+        title: "黑門之前",
+        scene: "第一幕",
+        line: "三枚印記不是鑰匙，而是證明。證明有人走過知識、文字與勇氣的三條路，仍未把心交給黑暗。"
+      },
+      {
+        image: "end2.png",
+        title: "末日火山",
+        scene: "第二幕",
+        line: "那枚戒指曾命令萬物低頭，如今只剩一聲無人聽見的碎裂。最沉重的力量，終究敗給願意放手的人。"
+      },
+      {
+        image: "end3.png",
+        title: "王國回聲",
+        scene: "第三幕",
+        line: "歷史記得興亡，文字留下心志，勇者帶回火光。這場冒險沒有把世界變得簡單，卻讓前路重新可見。"
+      },
+      {
+        image: "end4.png",
+        title: "歸途",
+        scene: "終幕",
+        line: "甘道夫：「我們並非戰勝了所有黑暗。只是學會在黑暗仍在時，點起自己的燈。」"
+      }
+    ];
 
     let placed = {};
     let activeDrag = null;
+    let endingIndex = 0;
 
     function init() {
       if (!localStorage.getItem("adventure_start")) {
@@ -441,6 +586,7 @@
       modal.classList.add("show");
       doorPuzzle.style.display = "block";
       complete.classList.remove("show");
+      endingModal.classList.remove("show");
       renderDoor();
     }
 
@@ -599,8 +745,40 @@
 
     function checkDoorComplete() {
       if (CERTS.every(cert => placed[cert.type])) {
-        window.setTimeout(showComplete, 350);
+        window.setTimeout(startEnding, 350);
       }
+    }
+
+    function startEnding() {
+      doorPuzzle.style.display = "none";
+      complete.classList.remove("show");
+      endingIndex = 0;
+      renderEnding();
+      endingModal.classList.add("show");
+    }
+
+    function renderEnding() {
+      const scene = ENDING_SCENES[endingIndex];
+      endingImage.src = scene.image;
+      endingImage.alt = scene.title;
+      endingTitle.textContent = scene.title;
+      endingScene.textContent = scene.scene;
+      endingLine.textContent = scene.line;
+      endingModal.classList.remove("fade");
+      void endingModal.offsetWidth;
+      endingModal.classList.add("fade");
+    }
+
+    function nextEnding() {
+      if (!endingModal.classList.contains("show")) return;
+      if (endingIndex < ENDING_SCENES.length - 1) {
+        endingIndex += 1;
+        renderEnding();
+        return;
+      }
+
+      endingModal.classList.remove("show");
+      showComplete();
     }
 
     function showComplete() {
@@ -627,10 +805,12 @@
     function restartAdventure() {
       clearProgress();
       modal.classList.remove("show");
+      endingModal.classList.remove("show");
       cover.classList.remove("hide");
     }
 
     cover.addEventListener("click", hideCover);
+    endingModal.addEventListener("click", nextEnding);
     clearBtn.addEventListener("click", clearProgress);
     gateHotspot.addEventListener("click", openGate);
     closeModal.addEventListener("click", () => modal.classList.remove("show"));
